@@ -19,10 +19,9 @@ async function store(req, res) {
 // Update the specified resource in storage.
 async function update(req, res) {
   const tweet = await Tweet.findById(req.params.id);
-  const userId = req.user.id;
-  const liked = tweet.likes.includes(userId)
-    ? tweet.likes.filter((id) => id.toString() !== userId)
-    : [...tweet.likes, userId];
+  const userId = tweet.user;
+  tweet.likes.includes(userId) ? tweet.likes.pull(userId) : tweet.likes.push(userId);
+  await tweet.save();
   res.json(tweet);
 }
 

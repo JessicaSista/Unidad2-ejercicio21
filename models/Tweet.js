@@ -4,10 +4,10 @@ const tweetSchema = new Schema(
   {
     text: { type: String, maxlength: 140 },
     user: { type: Schema.Types.ObjectId, ref: "User" },
-    likes: Number,
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   {
-    timestamps: true, /* ya vino creada y por lo que entiendo agrega automáticamente 'createdAt' */
+    timestamps: true /* ya vino creada y por lo que entiendo agrega automáticamente 'createdAt' */,
   },
 );
 

@@ -28,7 +28,7 @@ module.exports = async () => {
       text: faker.lorem.sentence(20).substring(0, 140), // Asegura máximo 140 caracteres
       user: randomUser._id,
       createdAt: faker.date.past(),
-      likes: faker.number.int({ min: 0, max: 1000 }),
+      likes: [randomUser._id],
     });
     tweets.push(newTweet);
 
