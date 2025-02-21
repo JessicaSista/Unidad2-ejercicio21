@@ -8,9 +8,9 @@ async function show(req, res) {}
 
 // Store a newly created resource in storage.
 async function store(req, res) {
-  const { name, lastname, username, password, email, bio, profilePic } = req.body;
+  const { firstname, lastname, username, password, email, bio, profilePic } = req.body;
   const newUser = new User({
-    name,
+    firtname,
     lastname,
     username,
     password,
