@@ -16,14 +16,22 @@
 
 const faker = require("@faker-js/faker").fakerES;
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 module.exports = async () => {
   const users = [];
+  const userPassword = await bcrypt.hash("1234", 10);
 
   for (let i = 0; i < 100; i++) {
     users.push({
       firstname: faker.person.firstName(),
       lastname: faker.person.lastName(),
+      username: faker.internet.username(),
+      password: userPassword,
+      email: faker.internet.email(),
+      description: faker.lorem.sentence(2),
+      //foto de perfil la voy a generar cuando nos funcione todo para que no se guarden muchas fotos en public, por si corremos los seeders muchas veces
+      //no tiene tweet list porque solo va en el seeder de artículos
     });
   }
 
