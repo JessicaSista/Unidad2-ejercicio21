@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const exampleController = require("../controllers/exampleController");
+const tweetController = require("../controllers/tweetController");
 
 /*
  * En general, para cada recurso (o entidad) de la API REST se tienen estos
@@ -16,10 +16,10 @@ const exampleController = require("../controllers/exampleController");
  * respetar las convenciones REST.
  */
 
-router.get("/", exampleController.index);
-router.post("/", exampleController.store);
-router.get("/:id", exampleController.show);
-router.patch("/:id", exampleController.update);
-router.delete("/:id", exampleController.destroy);
+router.get("/", tweetController.index);
+router.post("/", tweetController.store);
+router.get("/:id", tweetController.show);
+router.patch("/:id", tweetController.update);
+router.delete("/:id", tweetController.destroy);
 
 module.exports = router;

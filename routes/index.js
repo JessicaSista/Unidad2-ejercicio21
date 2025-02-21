@@ -5,7 +5,7 @@
 
 const userRoutes = require("./userRoutes");
 const articleRoutes = require("./articleRoutes");
-const exampleRoutes = require("./exampleRoutes");
+const tweetRoutes = require("./tweetRoutes");
 
 module.exports = (app) => {
   /*
@@ -20,5 +20,5 @@ module.exports = (app) => {
    */
   app.use("/users", userRoutes);
   app.use("/articles", articleRoutes);
-  app.use("/examples", exampleRoutes);
+  app.use("/tweets", tweetRoutes);
 };
