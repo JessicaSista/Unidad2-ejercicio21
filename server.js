@@ -10,7 +10,7 @@ app.use(express.json());
 
 routes(app);
 
-app.listen(APP_PORT, () => {
+app.listen(port, () => {
   console.log(`\n[Express] Servidor corriendo en el puerto ${port}.`);
   console.log(`[Express] Ingresar a http://localhost:${port}.\n`);
 });
