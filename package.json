@@ -1,0 +1,19 @@
+{
+  "name": "hack-academy_proyecto-base",
+  "description": "Proyecto Base creado por Hack Academy para agilizar el desarrollo de ejercicios.",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seeders": "node seeders/runAllSeeders.js"
+  },
+  "keywords": [],
+  "author": "Hack Academy",
+  "license": "ISC",
+  "dependencies": {
+    "@faker-js/faker": "^9.5.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1"
+  }
+}
