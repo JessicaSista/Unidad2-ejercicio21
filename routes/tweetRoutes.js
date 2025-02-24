@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const tweetController = require("../controllers/tweetController");
+const { expressjwt: checkJwt } = require("express-jwt");
 
 /*
  * En general, para cada recurso (o entidad) de la API REST se tienen estos
@@ -16,6 +17,7 @@ const tweetController = require("../controllers/tweetController");
  * respetar las convenciones REST.
  */
 
+router.use(checkJwt({ secret: process.env.JWT_SECRET, algorithms: ["HS256"] }));
 router.get("/", tweetController.index);
 router.post("/", tweetController.store);
 router.get("/:id", tweetController.show);
