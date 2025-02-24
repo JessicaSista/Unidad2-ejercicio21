@@ -19,25 +19,34 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
 module.exports = async () => {
-  const users = [];
   const userPassword = await bcrypt.hash("1234", 10);
 
   for (let i = 0; i < 100; i++) {
     const firstName = faker.person.firstName().toLowerCase();
     const lastName = faker.person.lastName().toLowerCase();
 
-    users.push({
-      firstname: firstName(),
-      lastname: lastName(),
+    const allUsers = await User.find();
+    const cantAleatoria = faker.number.int({ min: 0, max: 15 });
+    const randomFollowing = faker.helpers.arrayElements(allUsers, cantAleatoria);
+    const randomUsernames = randomFollowing.map((follow) => follow.username);
+
+    const newUser = {
+      firstname: firstName,
+      lastname: lastName,
       username: faker.internet.username(),
       password: userPassword,
       email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
       description: faker.lorem.sentence(2),
+      following: randomUsernames,
       //foto de perfil la voy a generar cuando nos funcione todo para que no se guarden muchas fotos en public, por si corremos los seeders muchas veces
       //no tiene tweet list porque solo va en el seeder de artículos
-    });
+    };
+    for (following of randomFollowing) {
+      following.followers.push(newUser.username);
+      await following.save();
+    }
+    User.create(newUser);
   }
 
-  await User.insertMany(users);
   console.log("[Database] Se corrió el seeder de Users.");
 };

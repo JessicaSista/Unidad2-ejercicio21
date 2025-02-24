@@ -9,6 +9,8 @@ const userSchema = new Schema(
     email: String,
     bio: String,
     profilePic: String /* porque en el documento vamos a guardar la URL de donde se almacena */,
+    followers: [{ type: Schema.Types.String, ref: "User" }],
+    following: [{ type: Schema.Types.String, ref: "User" }],
     tweetList: [{ type: Schema.Types.ObjectId, ref: "Tweet" }],
   },
   {
