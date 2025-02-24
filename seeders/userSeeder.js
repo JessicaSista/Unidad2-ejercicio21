@@ -23,12 +23,15 @@ module.exports = async () => {
   const userPassword = await bcrypt.hash("1234", 10);
 
   for (let i = 0; i < 100; i++) {
+    const firstName = faker.person.firstName().toLowerCase();
+    const lastName = faker.person.lastName().toLowerCase();
+
     users.push({
-      firstname: faker.person.firstName(),
-      lastname: faker.person.lastName(),
+      firstname: firstName(),
+      lastname: lastName(),
       username: faker.internet.username(),
       password: userPassword,
-      email: faker.internet.email(),
+      email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
       description: faker.lorem.sentence(2),
       //foto de perfil la voy a generar cuando nos funcione todo para que no se guarden muchas fotos en public, por si corremos los seeders muchas veces
       //no tiene tweet list porque solo va en el seeder de artículos
