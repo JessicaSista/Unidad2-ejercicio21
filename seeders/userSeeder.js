@@ -38,7 +38,7 @@ module.exports = async () => {
       email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
       description: faker.lorem.sentence(2),
       following: randomUsernames,
-      //foto de perfil la voy a generar cuando nos funcione todo para que no se guarden muchas fotos en public, por si corremos los seeders muchas veces
+      profilePic: "ha_logo.png",
       //no tiene tweet list porque solo va en el seeder de artículos
     };
     for (following of randomFollowing) {
