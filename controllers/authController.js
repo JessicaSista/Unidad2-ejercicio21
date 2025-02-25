@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { json } = require("express");
 const jwt = require("jsonwebtoken");
 
 async function getToken(req, res) {
@@ -11,5 +12,33 @@ async function getToken(req, res) {
   const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
   return res.json(token);
 }
+async function registerUser(req, res) {
+  try {
+    const { firstname, lastname, username, email, password, bio, profilePic } = req.body;
 
-module.exports = { getToken };
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email o Username ya están en uso" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      firstname,
+      lastname,
+      username,
+      email,
+      password: hashedPassword,
+      bio,
+      profilePic,
+    });
+
+    await newUser.save();
+    res.status.json({ message: "Usuario registrado correctamente" });
+  } catch (error) {
+    console.error(error);
+    res.status.json({ message: "Error en el servidor" });
+  }
+}
+
+module.exports = { getToken, registerUser };
