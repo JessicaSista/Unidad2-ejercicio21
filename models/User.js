@@ -1,5 +1,6 @@
 const { mongoose, Schema } = require("../db");
 const bcrypt = require("bcryptjs");
+const Tweet = require("./Tweet");
 
 const userSchema = new Schema(
   {
@@ -12,6 +13,7 @@ const userSchema = new Schema(
     profilePic: String /* porque en el documento vamos a guardar la URL de donde se almacena */,
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    tweets: [{ type: Schema.Types.ObjectId, ref: "Tweet" }],
     tweetList: [{ type: Schema.Types.ObjectId, ref: "Tweet" }],
   },
   {
@@ -33,6 +35,11 @@ userSchema.pre("insertMany", async function (next, users) {
   for (const user of users) {
     user.password = hashedPassword;
   }
+  next();
+});
+
+userSchema.pre("deleteOne", { document: true, query: false }, async function (next) {
+  await Tweet.deleteMany({ user: this._id });
   next();
 });
 
