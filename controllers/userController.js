@@ -58,6 +58,17 @@ async function update(req, res) {
 // Remove the specified resource from storage.
 async function destroy(req, res) {}
 
+async function getFollowers(req, res) {
+  const { id } = req.params;
+  const user = await User.findById(id).populate("followers", "username");
+  res.json({ follower: user.followers });
+}
+
+async function getFollowing(req, res) {
+  const { id } = req.params;
+  const user = await User.findById(id).populate("following", "username");
+  res.json({ following: user.following });
+}
 // Otros handlers...
 // ...
 
@@ -67,4 +78,6 @@ module.exports = {
   store,
   update,
   destroy,
+  getFollowers,
+  getFollowing,
 };
