@@ -19,7 +19,6 @@ const userSchema = new Schema(
   },
 );
 
-//siempre que hagamos llamada síncrona hagamos try y catch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     const salt = await bcrypt.genSalt(10);
@@ -27,6 +26,7 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
+
 userSchema.pre("insertMany", async function (next, users) {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash("1234", salt);
@@ -35,6 +35,10 @@ userSchema.pre("insertMany", async function (next, users) {
   }
   next();
 });
+
+userSchema.statics.comparePassword = async function (inputPassword, userPassword) {
+  return await bcrypt.compare(inputPassword, userPassword);
+};
 
 const User = mongoose.model("User", userSchema); // Entre comillas se coloca el nombre del modelo en mayúscula y en singular.
 
