@@ -21,7 +21,6 @@ const userSchema = new Schema(
   },
 );
 
-//siempre que hagamos llamada síncrona hagamos try y catch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 userSchema.pre("save", async function (next) {
   try {
     if (!this.isModified("password")) {
@@ -34,6 +33,7 @@ userSchema.pre("save", async function (next) {
     next(error);
   }
 });
+
 userSchema.pre("insertMany", async function (next, users) {
   try {
     const salt = await bcrypt.genSalt(10);
@@ -47,6 +47,10 @@ userSchema.pre("insertMany", async function (next, users) {
     next(error);
   }
 });
+
+userSchema.statics.comparePassword = async function (inputPassword, userPassword) {
+  return await bcrypt.compare(inputPassword, userPassword);
+};
 
 userSchema.pre("deleteOne", { document: true, query: false }, async function (next) {
   try {
