@@ -12,37 +12,28 @@ async function show(req, res) {
     const username = req.params.id;
 
     const user = await User.findOne({ username }).select("-password").populate("tweetList");
-
-    res.render("users", { user });
+    res.json(user);
   } catch (err) {
     console.log(err);
   }
 }
 
 // Store a newly created resource in storage.
-async function store(req, res) {
-  const form = formidable({
-    multiples: false,
-    uploadDir: path.join(__dirname, "/../public/img"), //importante poner /../ para ir hacia atrás, solo con ../ NO FUNCIONA
-    keepExtensions: true,
+async function store(fields, files) {
+  const newUser = new User({
+    firstname: fields.firstname,
+    lastname: fields.lastname,
+    username: fields.username,
+    password: fields.password,
+    email: fields.email,
+    bio: fields.bio,
+    profilePic: files.profilePic.newFilename, //se tiene que llamar profilePic el campo1!
   });
-
-  form.parse(req, async (err, fields, files) => {
-    const newUser = new User({
-      firstname: fields.firstname,
-      lastname: fields.lastname,
-      username: fields.username,
-      password: fields.password,
-      email: fields.email,
-      bio: fields.bio,
-      profilePic: files.profilePic.newFilename, //se tiene que llamar profilePic el campo1!
-    });
-    await newUser.save();
-    res.json({ user: newUser });
-  });
+  await newUser.save();
+  return newUser;
 }
 
-// Update the specified resource in storage. 
+// Update the specified resource in storage.
 
 async function update(req, res) {
   const form = formidable({
@@ -52,10 +43,9 @@ async function update(req, res) {
   });
 
   form.parse(req, async (err, fields, files) => {
-    const username = req.params.id;
+    const username = req.params.username;
 
     try {
-
       // La función de eliminación necesita la ubicación de la foto actual:
 
       const user = await User.findOne({ username });

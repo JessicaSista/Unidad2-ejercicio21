@@ -11,7 +11,7 @@ async function show(req, res) {}
 // Store a newly created resource in storage.
 async function store(req, res) {
   const { text } = req.body;
-  const userId = req.user.id;
+  const userId = req.auth.sub;
   const newTweet = await Tweet.create({ text, user: userId });
   res.json(newTweet);
 }
@@ -19,7 +19,7 @@ async function store(req, res) {
 // Update the specified resource in storage.
 async function update(req, res) {
   const tweet = await Tweet.findById(req.params.id);
-  const userId = tweet.user;
+  const userId = req.auth.sub;
   tweet.likes.includes(userId) ? tweet.likes.pull(userId) : tweet.likes.push(userId);
   await tweet.save();
   res.json(tweet);

@@ -11,11 +11,10 @@ const { expressjwt: checkJwt } = require("express-jwt");
  */
 
 router.get("/", userController.index);
-router.post("/", userController.store);
 
 router.use(checkJwt({ secret: process.env.JWT_SECRET, algorithms: ["HS256"] }));
 router.get("/:id", userController.show);
-router.patch("/:id", userController.update);
+router.patch("/:username", userController.update);
 router.delete("/:id", userController.destroy);
 
 router.patch("/:id/follows", userController.toggleFollow);
