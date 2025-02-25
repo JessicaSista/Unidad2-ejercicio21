@@ -3,10 +3,13 @@ const express = require("express");
 const routes = require("./routes");
 const port = process.env.APP_PORT;
 const app = express();
+const path = require("path");
 
 // app.use(cors()); // Para habilitar esta línea es necesario instalar la librería `cors`.
 app.use(express.static("public"));
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, "public")));
 
 routes(app);
 
