@@ -28,7 +28,7 @@ module.exports = async () => {
     const allUsers = await User.find();
     const cantAleatoria = faker.number.int({ min: 0, max: 15 });
     const randomFollowing = faker.helpers.arrayElements(allUsers, cantAleatoria);
-    const randomUsernames = randomFollowing.map((follow) => follow.username);
+    const randomIds = randomFollowing.map((follow) => follow._id);
 
     const newUser = {
       firstname: firstName,
@@ -37,12 +37,12 @@ module.exports = async () => {
       password: userPassword,
       email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
       description: faker.lorem.sentence(2),
-      following: randomUsernames,
+      following: randomIds,
       profilePic: "ha_logo.png",
       //no tiene tweet list porque solo va en el seeder de artículos
     };
     for (following of randomFollowing) {
-      following.followers.push(newUser.username);
+      following.followers.push(newUser._id);
       await following.save();
     }
     User.create(newUser);
