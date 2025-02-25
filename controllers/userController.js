@@ -42,20 +42,24 @@ async function store(req, res) {
 }
 
 // Update the specified resource in storage.
-async function update(req, res) {
-  const id = req.params.id;
+async function update(req, res) {} //implementar!!!!! si se cambia la foto se elimina la anterior
+
+// Remove the specified resource from storage.
+async function destroy(req, res) {} //eliminar usuario y eliminar sus tweets (on delete cascade en mongoose averiguar) !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+async function toggleFollow(req, res) {
+  const toFollow_id = req.params.id;
   const toFollow = await User.findById(id); //encuentro el usuario a seguir (o no)
 
-  // const user = req.auth;
-  // user no existe pero sería la persona que está autenticada, lo haríamos con el middelware
+  const user = await User.findById(req.auth.sub);
 
-  if (user.following.includes(toFollow._id)) {
+  if (user.following.includes(toFollow_id)) {
     //si lo seguía
-    user.following.pull(toFollow._id); //saco a ese usuario como seguidor
+    user.following.pull(toFollow_id); //saco a ese usuario como seguidor
     toFollow.followers.pull(user._id); //me saco como seguidor de ese usuario
   } else {
     //si no lo seguía
-    user.following.push(toFollow._id); //agrego a ese usuario como seguidor
+    user.following.push(toFollow_id); //agrego a ese usuario como seguidor
     toFollow.followers.push(user._id); //me agrego como seguidor de ese usuario
   }
 
@@ -63,9 +67,6 @@ async function update(req, res) {
   await user.save();
   await toFollow.save();
 }
-
-// Remove the specified resource from storage.
-async function destroy(req, res) {}
 
 async function getFollowers(req, res) {
   const { id } = req.params;
@@ -87,6 +88,7 @@ module.exports = {
   store,
   update,
   destroy,
+  toggleFollow,
   getFollowers,
   getFollowing,
 };

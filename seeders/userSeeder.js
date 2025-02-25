@@ -18,6 +18,7 @@ const faker = require("@faker-js/faker").fakerES;
 const User = require("../models/User");
 
 module.exports = async () => {
+  const users = [];
   for (let i = 0; i < 100; i++) {
     const firstName = faker.person.firstName().toLowerCase();
     const lastName = faker.person.lastName().toLowerCase();
@@ -27,7 +28,7 @@ module.exports = async () => {
     const randomFollowing = faker.helpers.arrayElements(allUsers, cantAleatoria);
     const randomIds = randomFollowing.map((follow) => follow._id);
 
-    const newUser = {
+    const newUser = new User({
       firstname: firstName,
       lastname: lastName,
       username: faker.internet.username(),
@@ -37,16 +38,17 @@ module.exports = async () => {
       following: randomIds,
       profilePic: "ha_logo.png",
       //no tiene tweet list porque solo va en el seeder de artículos
-    };
-
-    await User.create(newUser);
+    });
 
     for (following of randomFollowing) {
-      const createdUser = await User.findOne({ username: newUser.username });
-      following.followers.push(createdUser._id);
+      following.followers.push(newUser._id);
       await following.save();
     }
+
+    users.push(newUser);
   }
+
+  await User.insertMany(users);
 
   console.log("[Database] Se corrió el seeder de Users.");
 };
