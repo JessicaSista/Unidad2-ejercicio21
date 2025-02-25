@@ -51,14 +51,14 @@ async function update(req, res) {
   // const user = req.auth;
   // user no existe pero sería la persona que está autenticada, lo haríamos con el middelware
 
-  if (user.following.includes(toFollow.username)) {
+  if (user.following.includes(toFollow._id)) {
     //si lo seguía
-    user.following.pull(toFollow.username); //saco a ese usuario como seguidor
-    toFollow.followers.pull(user.username); //me saco como seguidor de ese usuario
+    user.following.pull(toFollow._id); //saco a ese usuario como seguidor
+    toFollow.followers.pull(user._id); //me saco como seguidor de ese usuario
   } else {
     //si no lo seguía
-    user.following.push(toFollow.username); //agrego a ese usuario como seguidor
-    toFollow.followers.push(user.username); //me agrego como seguidor de ese usuario
+    user.following.push(toFollow._id); //agrego a ese usuario como seguidor
+    toFollow.followers.push(user._id); //me agrego como seguidor de ese usuario
   }
 
   //guardo los cambios en la base de datos
@@ -71,13 +71,13 @@ async function destroy(req, res) {}
 
 async function getFollowers(req, res) {
   const { id } = req.params;
-  const user = await User.findById(id).populate("followers", "username");
+  const user = await User.findById(id).populate("followers");
   res.json({ follower: user.followers });
 }
 
 async function getFollowing(req, res) {
   const { id } = req.params;
-  const user = await User.findById(id).populate("following", "username");
+  const user = await User.findById(id).populate("following");
   res.json({ following: user.following });
 }
 // Otros handlers...
