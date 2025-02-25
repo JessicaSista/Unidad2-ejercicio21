@@ -42,8 +42,50 @@ async function store(req, res) {
   });
 }
 
-// Update the specified resource in storage.
-async function update(req, res) {} //implementar!!!!! si se cambia la foto se elimina la anterior
+// Update the specified resource in storage. 
+
+async function update(req, res) {
+  const form = formidable({
+    multiples: false,
+    uploadDir: path.join(__dirname, "/../public/img"),
+    keepExtensions: true,
+  });
+
+  form.parse(req, async (err, fields, files) => {
+    const username = req.params.id;
+
+    try {
+
+      // La función de eliminación necesita la ubicación de la foto actual:
+
+      const user = await User.findOne({ username });
+      const currentProfilePicPath = path.join(__dirname, "/../public/img", user.profilePic);
+
+      /* ------------------------------- */
+
+      const updatedUser = await User.findOneAndUpdate(
+        { username },
+        {
+          firstname: fields.firstname ? fields.firstname : undefined,
+          lastname: fields.lastname ? fields.lastname : undefined,
+          username: fields.username ? fields.username : undefined,
+          email: fields.email ? fields.email : undefined,
+          bio: fields.bio ? fields.bio : undefined,
+          profilePic: files.profilePic
+            ? (fs.unlinkSync(currentProfilePicPath), files.profilePic.newFilename) // Sólo si se carga una foto nueva se borra la anterior y se carga la nueva, sino queda la anterior.
+            : undefined,
+        },
+        { new: true },
+      );
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Hubo un error actualizando el usuario:", error);
+    }
+  });
+}
+
+/* -------------------------------- */
 
 // Remove the specified resource from storage.
 async function destroy(req, res) {} //eliminar usuario y eliminar sus tweets (on delete cascade en mongoose averiguar) !!!!!!!!!!!!!!!!!!!!!!!!!!!
