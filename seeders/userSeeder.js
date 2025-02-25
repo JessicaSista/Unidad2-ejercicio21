@@ -41,11 +41,14 @@ module.exports = async () => {
       profilePic: "ha_logo.png",
       //no tiene tweet list porque solo va en el seeder de artículos
     };
+
+    await User.create(newUser);
+
     for (following of randomFollowing) {
-      following.followers.push(newUser._id);
+      const createdUser = await User.findOne({ username: newUser.username });
+      following.followers.push(createdUser._id);
       await following.save();
     }
-    User.create(newUser);
   }
 
   console.log("[Database] Se corrió el seeder de Users.");
