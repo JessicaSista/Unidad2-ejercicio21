@@ -1,5 +1,4 @@
 const formidable = require("formidable");
-const bcrypt = require("bcryptjs");
 const path = require("path");
 const fs = require("fs");
 const User = require("../models/User");
@@ -28,12 +27,11 @@ async function store(req, res) {
   });
 
   form.parse(req, async (err, fields, files) => {
-    const hashedPassword = await bcrypt.hash(fields.password, 10);
     const newUser = new User({
       firstname: fields.firstname,
       lastname: fields.lastname,
       username: fields.username,
-      password: hashedPassword,
+      password: fields.password,
       email: fields.email,
       bio: fields.bio,
       profilePic: files.profilePic.newFilename, //se tiene que llamar profilePic el campo1!

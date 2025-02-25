@@ -1,4 +1,5 @@
 const { mongoose, Schema } = require("../db");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new Schema(
   {
@@ -17,6 +18,12 @@ const userSchema = new Schema(
     timestamps: true,
   },
 );
+
+userSchema.pre("save", async function (next) {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
 const User = mongoose.model("User", userSchema); // Entre comillas se coloca el nombre del modelo en mayúscula y en singular.
 

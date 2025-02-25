@@ -16,11 +16,8 @@
 
 const faker = require("@faker-js/faker").fakerES;
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
 module.exports = async () => {
-  const userPassword = await bcrypt.hash("1234", 10);
-
   for (let i = 0; i < 100; i++) {
     const firstName = faker.person.firstName().toLowerCase();
     const lastName = faker.person.lastName().toLowerCase();
@@ -34,7 +31,7 @@ module.exports = async () => {
       firstname: firstName,
       lastname: lastName,
       username: faker.internet.username(),
-      password: userPassword,
+      password: "1234",
       email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
       description: faker.lorem.sentence(2),
       following: randomIds,
