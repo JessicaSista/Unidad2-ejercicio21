@@ -1,8 +1,14 @@
 const Tweet = require("../models/Tweet");
 
 async function index(req, res) {
-  const tweets = await Tweet.find().sort({ createdAt: -1 }).limit(20);
-  res.json(tweets);
+  try {
+    const tweets = await Tweet.find().sort({ createdAt: -1 }).limit(20);
+    return res.json(tweets);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Hubo un error buscando los tweets", error: error.message });
+  }
 }
 
 // Display the specified resource.
@@ -31,9 +37,11 @@ async function update(req, res) {
     const userId = req.auth.sub;
     tweet.likes.includes(userId) ? tweet.likes.pull(userId) : tweet.likes.push(userId);
     await tweet.save();
-    res.json(tweet);
+    return res.json(tweet);
   } catch (error) {
-    res.status(500).json({ message: "Hubo un error actualizando los likes", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Hubo un error actualizando los likes", error: error.message });
   }
 }
 
@@ -42,9 +50,11 @@ async function destroy(req, res) {
   try {
     const tweet = await Tweet.findById(req.params.id);
     await tweet.deleteOne();
-    res.json({ message: "El tweet se ha eliminado correctamente" });
+    return res.json({ message: "El tweet se ha eliminado correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Hubo un error eliminando el tweet", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Hubo un error eliminando el tweet", error: error.message });
   }
 }
 
