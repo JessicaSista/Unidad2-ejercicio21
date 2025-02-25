@@ -13,7 +13,8 @@ async function show(req, res) {
     const username = req.params.id;
 
     const user = await User.findOne({ username }).select("-password").populate("tweetList");
-    res.json({ user });
+
+    res.render("users", { user });
   } catch (err) {
     console.log(err);
   }
