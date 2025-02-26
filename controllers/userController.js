@@ -96,12 +96,11 @@ async function update(req, res) {
 
       res.json(updatedUser);
     } catch (error) {
-      res.status(500).json({ message: "Error al actualizar el usuario." });
+      console.error(error); // Muestra el error en la consola para diagnóstico
+      res.status(500).json({ message: "Error al actualizar el usuario.", error: error.message });
     }
   });
 }
-
-/* -------------------------------- */
 
 // Remove the specified resource from storage.
 async function destroy(req, res) {} //eliminar usuario y eliminar sus tweets (on delete cascade en mongoose averiguar) !!!!!!!!!!!!!!!!!!!!!!!!!!!
