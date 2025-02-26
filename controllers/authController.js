@@ -53,7 +53,11 @@ async function registerUser(req, res) {
 
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       } else {
-        const newUser = await userController.store(fields, files);
+        try {
+          const newUser = await userController.store(fields, files);
+        } catch (error) {
+          return res.status(500).json({ error: "Error al crear usuario", details: error.message });
+        }
         res.status(201).json({ message: "Usuario registrado correctamente" });
       }
     });
