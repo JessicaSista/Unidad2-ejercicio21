@@ -23,46 +23,53 @@ async function getToken(req, res) {
 }
 async function registerUser(req, res) {
   try {
-    // Supabase Cloud Storage y Formidable
-    // Los archivos no se guardarán en el file system, sino en Supabase. Sin embargo, internamente, Formidable guarda los
-    // archivos temporalmente en un directorio temporal (que en Windows se llama “Temp”).
-
-    // LÓGICA NUEVA {
     const form = formidable({
-      multiples: true,
+      multiples: false, // Solo un archivo
       keepExtensions: true,
     });
 
     form.parse(req, async (err, fields, files) => {
-      /*const ext = path.extname(files.avatar.filepath); //(opcional)
-      const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
-      const { data, error } = await supabase.storage
-        .from("profilepics") // el nombre del bucket es "profilepics".
-        .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
-          //profilePic es el nombre del campo
-          cacheControl: "3600",
-          upsert: false,
-          contentType: files.profilePic.mimetype,
-        });
-      if (existingUser) {
-        const { data, error } = await supabase.storage
-          .from("profilepics")
-          .remove([files.profilePic.filepath]);
-        return res.status(400).json({ message: "Email o Username ya están en uso" });
-      } else {*/
-      try {
-        const newUser = await userController.store(fields, files);
-      } catch (error) {
-        return res.status(500).json({ error: "Error al crear usuario", details: error.message });
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Error al procesar los archivos", details: err.message });
       }
-      res.status(201).json({ message: "Usuario registrado correctamente" });
-      //}
+
+      try {
+        // Verifica que el archivo 'profilePic' exista
+        if (files.profilePic && files.profilePic.filepath) {
+          const file = files.profilePic;
+          const ext = path.extname(file.filepath);
+          const newFileName = `image_${Date.now()}${ext}`;
+
+          // Subir el archivo a Supabase
+          const { data, error } = await supabase.storage
+            .from("profilepics") // Asegúrate de que el nombre del bucket sea correcto
+            .upload(newFileName, fs.createReadStream(file.filepath), {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: file.mimetype,
+            });
+
+          if (error) {
+            throw new Error(`Error al subir archivo: ${error.message}`);
+          }
+
+          // Crear el nuevo usuario en la base de datos
+          const newUser = await userController.store(fields, files);
+          res.status(201).json({ message: "Usuario registrado correctamente" });
+        } else {
+          res.status(400).json({ error: "No se encontró el archivo de imagen" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al registrar usuario", details: error.message });
+      }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error en el servidor" });
+    res.status(500).json({ message: "Error en el servidor", details: error.message });
   }
-  // } LÓGICA VIEJA
 }
 
 module.exports = { getToken, registerUser };
