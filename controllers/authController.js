@@ -6,6 +6,11 @@ const { json } = require("express");
 const jwt = require("jsonwebtoken");
 const userController = require("./userController");
 
+// LÓGICA NUEVA
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
 async function getToken(req, res) {
   const user = await User.findOne({ email: req.body.email });
   if (!user) return res.json({ msg: "Credenciales incorrectas." });
@@ -18,19 +23,34 @@ async function getToken(req, res) {
 }
 async function registerUser(req, res) {
   try {
+    // Supabase Cloud Storage y Formidable
+    // Los archivos no se guardarán en el file system, sino en Supabase. Sin embargo, internamente, Formidable guarda los
+    // archivos temporalmente en un directorio temporal (que en Windows se llama “Temp”).
+
+    // LÓGICA NUEVA {
     const form = formidable({
-      multiples: false,
-      uploadDir: path.join(__dirname, "/../public/img"), //importante poner /../ para ir hacia atrás, solo con ../ NO FUNCIONA
+      multiples: true,
       keepExtensions: true,
     });
 
     form.parse(req, async (err, fields, files) => {
-      const username = fields.username;
-      const email = fields.email;
-      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      const ext = path.extname(files.avatar.filepath); //(opcional)
+      const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
+      const { data, error } = await supabase.storage
+        .from("profilepics") // el nombre del bucket es "profilepics".
+        .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
+          //profilePic es el nombre del campo
+          cacheControl: "3600",
+          upsert: false,
+          contentType: files.profilePic.mimetype,
+        });
+      // } LÓGICA NUEVA
+      // LÓGICA VIEJA {
       if (existingUser) {
-        const upImage = files.profilePic;
-        fs.unlinkSync(upImage.filepath);
+        const { data, error } = await supabase.storage
+          .from("profilepics")
+          .remove([files.profilePic.filepath]); //a chequear, saco de internet, si funciona ponerlo en el update del user controller
+
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       } else {
         const newUser = await userController.store(fields, files);
@@ -41,6 +61,7 @@ async function registerUser(req, res) {
     console.error(error);
     res.status(500).json({ message: "Error en el servidor" });
   }
+  // } LÓGICA VIEJA
 }
 
 module.exports = { getToken, registerUser };
