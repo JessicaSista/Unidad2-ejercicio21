@@ -34,7 +34,7 @@ async function registerUser(req, res) {
     });
 
     form.parse(req, async (err, fields, files) => {
-      const ext = path.extname(files.avatar.filepath); //(opcional)
+      /*const ext = path.extname(files.avatar.filepath); //(opcional)
       const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
       const { data, error } = await supabase.storage
         .from("profilepics") // el nombre del bucket es "profilepics".
@@ -49,14 +49,14 @@ async function registerUser(req, res) {
           .from("profilepics")
           .remove([files.profilePic.filepath]);
         return res.status(400).json({ message: "Email o Username ya están en uso" });
-      } else {
-        try {
-          const newUser = await userController.store(fields, files);
-        } catch (error) {
-          return res.status(500).json({ error: "Error al crear usuario", details: error.message });
-        }
-        res.status(201).json({ message: "Usuario registrado correctamente" });
+      } else {*/
+      try {
+        const newUser = await userController.store(fields, files);
+      } catch (error) {
+        return res.status(500).json({ error: "Error al crear usuario", details: error.message });
       }
+      res.status(201).json({ message: "Usuario registrado correctamente" });
+      //}
     });
   } catch (error) {
     console.error(error);
