@@ -13,12 +13,19 @@ async function index(req, res) {}
 // Display the specified resource.
 async function show(req, res) {
   try {
-    const username = req.params.id;
+    const username = req.params.username; // Corregido: usar username en lugar de id
+    const user = await User.findOne({ username })
+      .select("-password") // Excluye la contraseña
+      .populate("tweetList"); // Carga los tweets del usuario
 
-    const user = await User.findOne({ username }).select("-password").populate("tweetList");
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
     res.json(user);
   } catch (err) {
-    console.log(err);
+    console.error("Error al obtener usuario:", err);
+    res.status(500).json({ message: "Error al obtener usuario." });
   }
 }
 
