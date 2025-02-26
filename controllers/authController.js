@@ -44,13 +44,10 @@ async function registerUser(req, res) {
           upsert: false,
           contentType: files.profilePic.mimetype,
         });
-      // } LÓGICA NUEVA
-      // LÓGICA VIEJA {
       if (existingUser) {
         const { data, error } = await supabase.storage
           .from("profilepics")
-          .remove([files.profilePic.filepath]); //a chequear, saco de internet, si funciona ponerlo en el update del user controller
-
+          .remove([files.profilePic.filepath]);
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       } else {
         try {
