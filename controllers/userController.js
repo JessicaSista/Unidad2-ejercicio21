@@ -35,6 +35,7 @@ async function store(fields, files) {
 
 // Update the specified resource in storage.
 
+// Reemplazar el método fs por Supabase
 async function update(req, res) {
   const form = formidable({
     multiples: false,
@@ -46,24 +47,45 @@ async function update(req, res) {
     const username = req.params.username;
 
     try {
-      // La función de eliminación necesita la ubicación de la foto actual:
-
       const user = await User.findOne({ username });
-      const currentProfilePicPath = path.join(__dirname, "/../public/img", user.profilePic);
 
-      /* ------------------------------- */
+      if (user.profilePic) {
+        const { data, error } = await supabase.storage
+          .from("profilepics")
+          .remove([user.profilePic]);
+
+        if (error) {
+          console.error("Error al eliminar la imagen anterior de Supabase:", error);
+          return res.status(500).json({ error: "Error al eliminar la imagen anterior." });
+        }
+      }
+
+      let newProfilePic = user.profilePic; // mantener la imagen anterior si no hay nueva
+
+      if (files.profilePic) {
+        const file = files.profilePic[0];
+        const { data, error } = await supabase.storage
+          .from("profile-pics")
+          .upload(file.newFilename, file.filepath);
+
+        if (error) {
+          console.error("Error al cargar la imagen a Supabase:", error);
+          return res.status(500).json({ error: "Error al cargar la nueva imagen." });
+        }
+
+        const ext = path.extname(files.avatar.filepath);
+        const newFileName = `image_${Date.now()}${ext}`;
+      }
 
       const updatedUser = await User.findOneAndUpdate(
         { username },
         {
-          firstname: fields.firstname ? fields.firstname : undefined,
-          lastname: fields.lastname ? fields.lastname : undefined,
-          username: fields.username ? fields.username : undefined,
-          email: fields.email ? fields.email : undefined,
-          bio: fields.bio ? fields.bio : undefined,
-          profilePic: files.profilePic
-            ? (fs.unlinkSync(currentProfilePicPath), files.profilePic.newFilename) // Sólo si se carga una foto nueva se borra la anterior y se carga la nueva, sino queda la anterior.
-            : undefined,
+          firstname: fields.firstname,
+          lastname: fields.lastname,
+          username: fields.username,
+          email: fields.email,
+          bio: fields.bio,
+          profilePic: newProfilePic,
         },
         { new: true },
       );
@@ -71,6 +93,7 @@ async function update(req, res) {
       res.json(updatedUser);
     } catch (error) {
       console.error("Hubo un error actualizando el usuario:", error);
+      res.status(500).json({ error: "Error actualizando el usuario." });
     }
   });
 }
