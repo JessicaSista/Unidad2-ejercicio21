@@ -27,14 +27,13 @@ async function store(fields, files) {
     password: fields.password,
     email: fields.email,
     bio: fields.bio,
-    profilePic: files.profilePic.newFilename, //se tiene que llamar profilePic el campo1!
+    profilePic: data.key, //se tiene que llamar profilePic el campo!
   });
   await newUser.save();
   return newUser;
 }
 
 // Update the specified resource in storage.
-
 async function update(req, res) {
   const form = formidable({
     multiples: false,
@@ -50,18 +49,18 @@ async function update(req, res) {
         return res.status(404).json({ message: "Usuario no encontrado." });
       }
 
-      // si hay una imagen anterior, eliminarla de Supabase
-      if (user.profilePic) {
+      // Si hay una imagen anterior, eliminarla de Supabase
+      if (user.profilePic && files.profilePic) {
         const { error } = await supabase.storage.from("profilepics").remove([user.profilePic]);
-
         if (error) {
-          console.error("Error al eliminar la imagen anterior:", error);
           return res.status(500).json({ message: "Error al eliminar la imagen anterior." });
         }
       }
 
-      let newProfilePic = user.profilePic;
+      let newProfilePic = user.profilePic; // foto actual por defecto
+
       if (files.profilePic) {
+        // si hay una nueva imagen, subirla a Supabase
         const ext = path.extname(files.profilePic.filepath);
         const newFileName = `image_${Date.now()}${ext}`;
 
@@ -70,17 +69,18 @@ async function update(req, res) {
           .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
             cacheControl: "3600",
             upsert: false,
-            contentType: files.profilePic.mimetype,
+            contentType: file.mimetype,
+            duplex: "half",
           });
 
         if (error) {
-          console.error("Error al subir la nueva imagen:", error);
           return res.status(500).json({ message: "Error al subir la nueva imagen." });
         }
 
-        newProfilePic = data.Key;
+        newProfilePic = data.Key; // Reemplaza la foto anterior por la nueva
       }
 
+      // Actualizar usuario con los nuevos datos
       const updatedUser = await User.findOneAndUpdate(
         { username },
         {
@@ -96,13 +96,10 @@ async function update(req, res) {
 
       res.json(updatedUser);
     } catch (error) {
-      console.error("Hubo un error actualizando el usuario:", error);
       res.status(500).json({ message: "Error al actualizar el usuario." });
     }
   });
 }
-
-module.exports = { update };
 
 /* -------------------------------- */
 
