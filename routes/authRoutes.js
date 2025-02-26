@@ -14,7 +14,7 @@ router.post("/users", authController.registerUser);
 
 router.get("/", async (req, res) => {
   try {
-    const response = await fetch("https://tu-dominio.vercel.app/tokens", {
+    const response = await fetch("https://unidad2-ejercicio21.vercel.app/tokens", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}), // Si `POST /tokens` requiere datos, agrégalos aquí
