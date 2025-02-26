@@ -35,11 +35,9 @@ async function store(fields, files) {
 
 // Update the specified resource in storage.
 
-// Reemplazar el método fs por Supabase
 async function update(req, res) {
   const form = formidable({
     multiples: false,
-    uploadDir: path.join(__dirname, "/../public/img"),
     keepExtensions: true,
   });
 
@@ -48,33 +46,39 @@ async function update(req, res) {
 
     try {
       const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado." });
+      }
 
+      // si hay una imagen anterior, eliminarla de Supabase
       if (user.profilePic) {
-        const { data, error } = await supabase.storage
-          .from("profilepics")
-          .remove([user.profilePic]);
+        const { error } = await supabase.storage.from("profilepics").remove([user.profilePic]);
 
         if (error) {
-          console.error("Error al eliminar la imagen anterior de Supabase:", error);
-          return res.status(500).json({ error: "Error al eliminar la imagen anterior." });
+          console.error("Error al eliminar la imagen anterior:", error);
+          return res.status(500).json({ message: "Error al eliminar la imagen anterior." });
         }
       }
 
-      let newProfilePic = user.profilePic; // mantener la imagen anterior si no hay nueva
-
+      let newProfilePic = user.profilePic;
       if (files.profilePic) {
-        const file = files.profilePic[0];
+        const ext = path.extname(files.profilePic.filepath);
+        const newFileName = `image_${Date.now()}${ext}`;
+
         const { data, error } = await supabase.storage
-          .from("profile-pics")
-          .upload(file.newFilename, file.filepath);
+          .from("profilepics")
+          .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: files.profilePic.mimetype,
+          });
 
         if (error) {
-          console.error("Error al cargar la imagen a Supabase:", error);
-          return res.status(500).json({ error: "Error al cargar la nueva imagen." });
+          console.error("Error al subir la nueva imagen:", error);
+          return res.status(500).json({ message: "Error al subir la nueva imagen." });
         }
 
-        const ext = path.extname(files.avatar.filepath);
-        const newFileName = `image_${Date.now()}${ext}`;
+        newProfilePic = data.Key;
       }
 
       const updatedUser = await User.findOneAndUpdate(
@@ -93,10 +97,12 @@ async function update(req, res) {
       res.json(updatedUser);
     } catch (error) {
       console.error("Hubo un error actualizando el usuario:", error);
-      res.status(500).json({ error: "Error actualizando el usuario." });
+      res.status(500).json({ message: "Error al actualizar el usuario." });
     }
   });
 }
+
+module.exports = { update };
 
 /* -------------------------------- */
 
