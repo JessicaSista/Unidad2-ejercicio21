@@ -13,10 +13,10 @@ async function index(req, res) {}
 // Display the specified resource.
 async function show(req, res) {
   try {
-    const username = req.params.username; // Corregido: usar username en lugar de id
+    const username = req.params.username;
     const user = await User.findOne({ username })
       .select("-password") // Excluye la contraseña
-      .populate("tweetList"); // Carga los tweets del usuario
+      .populate("tweetList");
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });
