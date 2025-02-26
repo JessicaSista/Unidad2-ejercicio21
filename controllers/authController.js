@@ -49,6 +49,7 @@ async function registerUser(req, res) {
               cacheControl: "3600",
               upsert: false,
               contentType: file.mimetype,
+              duplex: "half",
             });
 
           if (error) {
