@@ -17,7 +17,10 @@ router.get("/", async (req, res) => {
     const response = await fetch("https://unidad2-ejercicio21.vercel.app/tokens", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}), // Si `POST /tokens` requiere datos, agrégalos aquí
+      body: JSON.stringify({
+        email: "mateo@gmail.com",
+        password: "1234",
+      }),
     });
 
     if (!response.ok) {
