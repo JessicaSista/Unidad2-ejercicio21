@@ -73,7 +73,7 @@ async function update(req, res) {
           .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
             cacheControl: "3600",
             upsert: false,
-            contentType: file.mimetype,
+            contentType: files.profilePic.mimetype, // Usar files.profilePic en lugar de file
             duplex: "half",
           });
 
