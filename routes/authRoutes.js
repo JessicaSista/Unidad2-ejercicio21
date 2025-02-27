@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: "julio.mezamatos8@gmail.com",
+        email: "felipe_munozmota@gmail.com",
         password: "1234",
       }),
     });
