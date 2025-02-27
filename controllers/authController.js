@@ -53,19 +53,23 @@ async function registerUser(req, res) {
               duplex: "half",
             });
 
-          // Check if there was an error during the upload
+          // Debug: log the response from Supabase
+          console.log("Supabase Upload Response:", { data, error });
+
+          // Verifica si hay un error durante la carga
           if (error) {
             throw new Error(`Error al subir archivo: ${error.message}`);
           }
 
-          // Ensure 'data' contains the required information (e.g., file URL)
-          const fileUrl = data?.Key
-            ? `${process.env.SUPABASE_URL}/storage/v1/object/public/profilepics/${data.Key}`
-            : null;
-
-          if (!fileUrl) {
+          // Ensure 'data' contains the necessary information
+          if (!data?.Key) {
             return res.status(500).json({ error: "No se pudo obtener la URL de la imagen." });
           }
+
+          // Try constructing the URL manually
+          const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profilepics/${data.Key}`;
+
+          console.log("File URL:", fileUrl); // Debugging the URL
 
           // Add the file URL to the user's data (in case you want to store it in the DB)
           fields.profilePicUrl = fileUrl;
