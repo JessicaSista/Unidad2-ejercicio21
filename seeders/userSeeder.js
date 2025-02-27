@@ -8,9 +8,8 @@ module.exports = async () => {
       const firstName = faker.person.firstName().toLowerCase();
       const lastName = faker.person.lastName().toLowerCase();
 
-      const allUsers = await User.find();
       const cantAleatoria = faker.number.int({ min: 0, max: 15 });
-      const randomFollowing = faker.helpers.arrayElements(allUsers, cantAleatoria);
+      const randomFollowing = faker.helpers.arrayElements(users, cantAleatoria);
       const randomIds = randomFollowing.map((follow) => follow._id);
 
       const newUser = new User({
