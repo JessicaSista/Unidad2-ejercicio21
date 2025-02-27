@@ -92,7 +92,9 @@ async function registerUser(req, res) {
           data = uploadData;
         } catch (err) {
           console.error("Error al subir imagen a Supabase:", err);
-          return res.status(500).json({ error: "Error al subir imagen a Supabase" });
+          return res
+            .status(500)
+            .json({ error: "Error al subir imagen a Supabase", details: error });
         }
 
         // Crear usuario
