@@ -24,7 +24,8 @@ async function getToken(req, res) {
 
 async function registerUser(req, res) {
   try {
-    console.log("Inicio de registerUser");
+    console.log("🚀 Iniciando registerUser");
+
     const form = formidable({
       multiples: true,
       keepExtensions: true,
@@ -32,21 +33,17 @@ async function registerUser(req, res) {
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error("Error al analizar el formulario:", err);
+        console.error("❌ Error al parsear el formulario:", err);
         return res.status(400).json({ message: "Error al procesar el formulario" });
       }
 
-      console.log("Campos recibidos:", fields);
-      console.log("Archivos recibidos:", files);
-
-      if (!files.profilePic) {
-        console.error("No se recibió el archivo profilePic");
-        return res.status(400).json({ message: "No se recibió la imagen de perfil" });
-      }
+      console.log("✅ Formulario parseado correctamente");
+      console.log("📂 Archivos recibidos:", files);
+      console.log("📝 Campos recibidos:", fields);
 
       const ext = path.extname(files.profilePic.filepath);
       const newFileName = `image_${Date.now()}${ext}`;
-      console.log("Nombre de archivo generado:", newFileName);
+      console.log("🖼️ Nuevo nombre del archivo:", newFileName);
 
       const { data, error } = await supabase.storage
         .from("profilepics")
@@ -57,28 +54,38 @@ async function registerUser(req, res) {
         });
 
       if (error) {
-        console.error("Error al subir la imagen a Supabase:", error);
-        return res.status(500).json({ message: "Error al subir la imagen de perfil" });
+        console.error("❌ Error al subir la imagen a Supabase:", error);
+        return res.status(500).json({ message: "Error al subir la imagen" });
       }
 
-      console.log("Imagen subida exitosamente:", data);
+      console.log("✅ Imagen subida a Supabase:", data);
 
+      // Aquí verificamos si el usuario ya existe antes de continuar
       const existingUser = await User.findOne({ email: fields.email });
-      console.log("Usuario existente:", existingUser);
-
       if (existingUser) {
-        await supabase.storage.from("profilepics").remove([newFileName]);
-        console.log("Imagen eliminada porque el usuario ya existe");
+        console.log("⚠️ Usuario ya existe con ese email:", fields.email);
+
+        const { data: deleteData, error: deleteError } = await supabase.storage
+          .from("profilepics")
+          .remove([newFileName]);
+
+        if (deleteError) {
+          console.error("❌ Error al eliminar la imagen de Supabase:", deleteError);
+        } else {
+          console.log("🗑️ Imagen eliminada de Supabase correctamente:", deleteData);
+        }
+
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       }
 
+      console.log("🆕 Registrando nuevo usuario...");
       const newUser = await userController.store(fields, files);
-      console.log("Usuario creado:", newUser);
+      console.log("✅ Usuario registrado:", newUser);
 
       res.status(201).json({ message: "Usuario registrado correctamente" });
     });
   } catch (error) {
-    console.error("Error en registerUser:", error);
+    console.error("❌ Error general en registerUser:", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 }
