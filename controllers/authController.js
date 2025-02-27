@@ -24,70 +24,58 @@ async function getToken(req, res) {
 
 async function registerUser(req, res) {
   try {
-    const form = formidable({
-      multiples: false, // Solo un archivo
-      keepExtensions: true,
-    });
+    // Envolver form.parse en una Promesa
+    const form = formidable({ multiples: false, keepExtensions: true });
 
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ error: "Error al procesar los archivos", details: err.message });
-      }
+    const parseForm = () =>
+      new Promise((resolve, reject) => {
+        form.parse(req, (err, fields, files) => {
+          if (err) reject(err);
+          else resolve({ fields, files });
+        });
+      });
 
-      try {
-        // Verifica que el archivo 'profilePic' exista
-        if (files.profilePic && files.profilePic.filepath) {
-          const file = files.profilePic;
-          const ext = path.extname(file.filepath);
-          const newFileName = `image_${Date.now()}${ext}`;
+    const { fields, files } = await parseForm(); // Esperar a que se resuelva el formulario
 
-          // Subir el archivo a Supabase
-          const { data, error } = await supabase.storage
-            .from("profilepics") // Asegúrate de que el nombre del bucket sea correcto
-            .upload(newFileName, fs.createReadStream(file.filepath), {
-              cacheControl: "3600",
-              upsert: false,
-              contentType: file.mimetype,
-              duplex: "half",
-            });
+    if (!files.avatar) {
+      return res.status(400).json({ error: "No se encontró el archivo de imagen" });
+    }
 
-          // Debug: log the response from Supabase
-          console.log("Supabase Upload Response:", { data, error });
+    const file = files.avatar;
+    const ext = path.extname(file.filepath);
+    const newFileName = `image_${Date.now()}${ext}`;
 
-          // Verifica si hay un error durante la carga
-          if (error) {
-            throw new Error(`Error al subir archivo: ${error.message}`);
-          }
+    // Subir el archivo a Supabase
+    const { data, error } = await supabase.storage
+      .from("avatars") // Asegúrate de que el bucket sea correcto
+      .upload(newFileName, fs.createReadStream(file.filepath), {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.mimetype,
+      });
 
-          // Ensure 'data' contains the necessary information
-          if (!data?.Key) {
-            return res.status(500).json({ error: "No se pudo obtener la URL de la imagen." });
-          }
+    if (error) {
+      throw new Error(`Error al subir archivo: ${error.message}`);
+    }
 
-          // Try constructing the URL manually
-          const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profilepics/${data.Key}`;
+    // Verificar si la respuesta de Supabase tiene el path del archivo
+    if (!data?.path) {
+      return res.status(500).json({ error: "No se pudo obtener la URL de la imagen." });
+    }
 
-          console.log("File URL:", fileUrl); // Debugging the URL
+    // Construir la URL de la imagen pública
+    const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/avatars/${data.path}`;
 
-          // Add the file URL to the user's data (in case you want to store it in the DB)
-          fields.profilePicUrl = fileUrl;
+    console.log("File URL:", fileUrl); // Para debug
 
-          // Crear el nuevo usuario en la base de datos
-          const newUser = await userController.store(fields, files);
-          res.status(201).json({ message: "Usuario registrado correctamente" });
-        } else {
-          res.status(400).json({ error: "No se encontró el archivo de imagen" });
-        }
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al registrar usuario", details: error.message });
-      }
-    });
+    // Guardar el usuario con la imagen (esto depende de tu lógica)
+    fields.avatarUrl = fileUrl;
+    // Aquí deberías almacenar `fields` en la base de datos
+
+    res.status(201).json({ message: "Usuario registrado correctamente", avatarUrl: fileUrl });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error en el servidor", details: error.message });
+    res.status(500).json({ error: "Error en el servidor", details: error.message });
   }
 }
 
