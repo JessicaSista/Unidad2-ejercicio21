@@ -4,8 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const userController = require("./userController");
-
-// LÓGICA NUEVA
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -43,17 +41,6 @@ async function registerUser(req, res) {
       if (existingUser) {
         console.warn("Usuario ya existente:", existingUser);
 
-        // Si hay imagen subida, eliminarla de Supabase
-        if (files.profilePic) {
-          const { error } = await supabase.storage
-            .from("profilepics")
-            .remove([files.profilePic.filepath]);
-
-          if (error) {
-            console.error("Error eliminando imagen de Supabase:", error);
-          }
-        }
-
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       }
 
@@ -72,9 +59,12 @@ async function registerUser(req, res) {
       const ext = path.extname(profilePicFile.originalFilename);
       const newFileName = `image_${Date.now()}${ext}`;
 
+      // Abrimos un Stream correctamente
+      const stream = fs.createReadStream(profilePicFile.filepath);
+
       const { data, error } = await supabase.storage
         .from("profilepics")
-        .upload(newFileName, fs.createReadStream(profilePicFile.filepath), {
+        .upload(newFileName, stream, {
           cacheControl: "3600",
           upsert: false,
           contentType: profilePicFile.mimetype,
@@ -87,7 +77,7 @@ async function registerUser(req, res) {
 
       // Crear usuario
       try {
-        const newUser = await userController.store(fields, files);
+        const newUser = await userController.store({ ...fields, profilePic: data.path });
         res.status(201).json({ message: "Usuario registrado correctamente", imageUrl: data.path });
       } catch (err) {
         console.error("Error al guardar usuario:", err);
@@ -101,5 +91,3 @@ async function registerUser(req, res) {
 }
 
 module.exports = { registerUser };
-
-module.exports = { getToken, registerUser };
