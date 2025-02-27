@@ -21,7 +21,7 @@ module.exports = async () => {
   const tweets = [];
   const users = await User.find();
 
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 50; i++) {
     const randomUser = users[faker.number.int({ min: 0, max: users.length - 1 })];
 
     const newTweet = new Tweet({
