@@ -38,7 +38,7 @@ async function store(fields, files) {
     password: fields.password,
     email: fields.email,
     bio: fields.bio,
-    profilePic: data.key, //se tiene que llamar profilePic el campo!
+    profilePic: data.key, //está mal
   });
   await newUser.save();
   return newUser;
@@ -60,27 +60,23 @@ async function update(req, res) {
         return res.status(404).json({ message: "Usuario no encontrado." });
       }
 
-      // Si hay una imagen anterior, eliminarla de Supabase
-      if (user.profilePic && files.profilePic) {
-        const { error } = await supabase.storage.from("profilepics").remove([user.profilePic]);
-        if (error) {
-          return res.status(500).json({ message: "Error al eliminar la imagen anterior." });
-        }
-      }
-
-      let newProfilePic = user.profilePic; // foto actual por defecto
+      let newProfilePic = user.profilePic; // Foto actual por defecto
 
       if (files.profilePic) {
-        // si hay una nueva imagen, subirla a Supabase
+        // Si hay una nueva imagen, subirla a Supabase y eliminar la naterior
+
+        await supabase.storage.from("profilepics").remove([user.profilePic]);
+
         const ext = path.extname(files.profilePic.filepath);
         const newFileName = `image_${Date.now()}${ext}`;
 
+        // Subir la nueva imagen a Supabase
         const { data, error } = await supabase.storage
           .from("profilepics")
           .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
             cacheControl: "3600",
             upsert: false,
-            contentType: files.profilePic.mimetype, // Usar files.profilePic en lugar de file
+            contentType: files.profilePic.mimetype,
             duplex: "half",
           });
 
@@ -88,7 +84,8 @@ async function update(req, res) {
           return res.status(500).json({ message: "Error al subir la nueva imagen." });
         }
 
-        newProfilePic = data.Key; // Reemplaza la foto anterior por la nueva
+        // Guardar la nueva URL o el path de la imagen subida
+        newProfilePic = data.path; // Aquí guardas el path correcto
       }
 
       // Actualizar usuario con los nuevos datos
@@ -100,7 +97,7 @@ async function update(req, res) {
           username: fields.username,
           email: fields.email,
           bio: fields.bio,
-          profilePic: newProfilePic,
+          profilePic: newProfilePic, // Usamos la nueva imagen (si existe)
         },
         { new: true },
       );

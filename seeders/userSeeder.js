@@ -18,6 +18,7 @@ module.exports = async () => {
         email: faker.internet.email({ firstName, lastName, provider: "gmail.com" }),
         description: faker.lorem.sentence(2),
         following: [],
+        following: [],
         profilePic: "ha_logo.png",
       });
 
