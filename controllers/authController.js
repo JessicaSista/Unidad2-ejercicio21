@@ -23,6 +23,7 @@ async function getToken(req, res) {
 }
 
 async function registerUser(req, res) {
+  console.log("🔵 Entrando en registerUser");
   try {
     console.log("🚀 Iniciando registerUser");
 
@@ -33,7 +34,7 @@ async function registerUser(req, res) {
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error("❌ Error al parsear el formulario:", err);
+        console.log("❌ Error al parsear el formulario:", err);
         return res.status(400).json({ message: "Error al procesar el formulario" });
       }
 
@@ -54,7 +55,7 @@ async function registerUser(req, res) {
         });
 
       if (error) {
-        console.error("❌ Error al subir la imagen a Supabase:", error);
+        console.log("❌ Error al subir la imagen a Supabase:", error);
         return res.status(500).json({ message: "Error al subir la imagen" });
       }
 
@@ -70,7 +71,7 @@ async function registerUser(req, res) {
           .remove([newFileName]);
 
         if (deleteError) {
-          console.error("❌ Error al eliminar la imagen de Supabase:", deleteError);
+          console.log("❌ Error al eliminar la imagen de Supabase:", deleteError);
         } else {
           console.log("🗑️ Imagen eliminada de Supabase correctamente:", deleteData);
         }
@@ -85,7 +86,7 @@ async function registerUser(req, res) {
       res.status(201).json({ message: "Usuario registrado correctamente" });
     });
   } catch (error) {
-    console.error("❌ Error general en registerUser:", error);
+    console.log("❌ Error general en registerUser:", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 }
