@@ -21,62 +21,47 @@ async function getToken(req, res) {
   const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
   return res.json(token);
 }
-
 async function registerUser(req, res) {
   try {
-    // Envolver form.parse en una Promesa
-    const form = formidable({ multiples: false, keepExtensions: true });
+    // Supabase Cloud Storage y Formidable
+    // Los archivos no se guardarán en el file system, sino en Supabase. Sin embargo, internamente, Formidable guarda los
+    // archivos temporalmente en un directorio temporal (que en Windows se llama “Temp”).
 
-    const parseForm = () =>
-      new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err);
-          else resolve({ fields, files });
+    // LÓGICA NUEVA {
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+    });
+
+    form.parse(req, async (err, fields, files) => {
+      const ext = path.extname(files.avatar.filepath); //(opcional)
+      const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
+      const { data, error } = await supabase.storage
+        .from("profilepics") // el nombre del bucket es "profilepics".
+        .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
+          //profilePic es el nombre del campo
+          cacheControl: "3600",
+          upsert: false,
+          contentType: files.profilePic.mimetype,
         });
-      });
+      // } LÓGICA NUEVA
+      // LÓGICA VIEJA {
+      if (existingUser) {
+        const { data, error } = await supabase.storage
+          .from("profilepics")
+          .remove([files.profilePic.filepath]); //a chequear, saco de internet, si funciona ponerlo en el update del user controller
 
-    const { fields, files } = await parseForm(); // Esperar a que se resuelva el formulario
-
-    if (!files.avatar) {
-      return res.status(400).json({ error: "No se encontró el archivo de imagen" });
-    }
-
-    const file = files.avatar;
-    const ext = path.extname(file.filepath);
-    const newFileName = `image_${Date.now()}${ext}`;
-
-    // Subir el archivo a Supabase
-    const { data, error } = await supabase.storage
-      .from("avatars") // Asegúrate de que el bucket sea correcto
-      .upload(newFileName, fs.createReadStream(file.filepath), {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.mimetype,
-      });
-
-    if (error) {
-      throw new Error(`Error al subir archivo: ${error.message}`);
-    }
-
-    // Verificar si la respuesta de Supabase tiene el path del archivo
-    if (!data?.path) {
-      return res.status(500).json({ error: "No se pudo obtener la URL de la imagen." });
-    }
-
-    // Construir la URL de la imagen pública
-    const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/avatars/${data.path}`;
-
-    console.log("File URL:", fileUrl); // Para debug
-
-    // Guardar el usuario con la imagen (esto depende de tu lógica)
-    fields.avatarUrl = fileUrl;
-    // Aquí deberías almacenar `fields` en la base de datos
-
-    res.status(201).json({ message: "Usuario registrado correctamente", avatarUrl: fileUrl });
+        return res.status(400).json({ message: "Email o Username ya están en uso" });
+      } else {
+        const newUser = await userController.store(fields, files);
+        res.status(201).json({ message: "Usuario registrado correctamente" });
+      }
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error en el servidor", details: error.message });
+    res.status(500).json({ message: "Error en el servidor" });
   }
+  // } LÓGICA VIEJA
 }
 
 module.exports = { getToken, registerUser };
