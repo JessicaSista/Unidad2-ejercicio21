@@ -20,55 +20,86 @@ async function getToken(req, res) {
   const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
   return res.json(token);
 }
+
 async function registerUser(req, res) {
   try {
-    // Supabase Cloud Storage y Formidable
-    // Los archivos no se guardarán en el file system, sino en Supabase. Sin embargo, internamente, Formidable guarda los
-    // archivos temporalmente en un directorio temporal (que en Windows se llama “Temp”).
-
-    // LÓGICA NUEVA {
-    const form = formidable({
-      multiples: true,
-      keepExtensions: true,
-    });
+    const form = formidable({ multiples: false, keepExtensions: true });
 
     form.parse(req, async (err, fields, files) => {
-      const ext = path.extname(files.profilePic.filepath); //(opcional)
-      const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
-      const { data, error } = await supabase.storage
-        .from("profilepics") // el nombre del bucket es "profilepics".
-        .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
-          //profilePic es el nombre del campo
-          cacheControl: "3600",
-          upsert: false,
-          contentType: files.profilePic.mimetype,
-          duplex: "half",
-        });
-      // } LÓGICA NUEVA
-      // LÓGICA VIEJA {
+      if (err) {
+        console.error("Error al procesar el formulario:", err);
+        return res.status(400).json({ error: "Error al procesar el formulario" });
+      }
+
+      console.log("Campos recibidos:", fields);
+      console.log("Archivos recibidos:", files);
+
       const username = fields.username;
       const email = fields.email;
+
+      // Verificar si el usuario ya existe
       const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+
       if (existingUser) {
-        const { data, error } = await supabase.storage
-          .from("profilepics")
-          .remove([files.profilePic.filepath]); //a chequear, saco de internet, si funciona ponerlo en el update del user controller
+        console.warn("Usuario ya existente:", existingUser);
+
+        // Si hay imagen subida, eliminarla de Supabase
+        if (files.profilePic) {
+          const { error } = await supabase.storage
+            .from("profilePics")
+            .remove([files.profilePic.filepath]);
+
+          if (error) {
+            console.error("Error eliminando imagen de Supabase:", error);
+          }
+        }
 
         return res.status(400).json({ message: "Email o Username ya están en uso" });
-      } else {
-        try {
-          const newUser = await userController.store(fields, files);
-          res.status(201).json({ message: "Usuario registrado correctamente" });
-        } catch (err) {
-          res.status(500).json({ error: err.message });
-        }
+      }
+
+      // Si no existe, subir imagen y registrar usuario
+      if (!files.profilePic) {
+        return res.status(400).json({ error: "No se encontró la imagen de perfil" });
+      }
+
+      const profilePicFile = files.profilePic;
+
+      if (!fs.existsSync(profilePicFile.filepath)) {
+        console.error("El archivo no existe en la ruta:", profilePicFile.filepath);
+        return res.status(500).json({ error: "Error al acceder al archivo" });
+      }
+
+      const ext = path.extname(profilePicFile.originalFilename);
+      const newFileName = `image_${Date.now()}${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from("profilePics")
+        .upload(newFileName, fs.createReadStream(profilePicFile.filepath), {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: profilePicFile.mimetype,
+        });
+
+      if (error) {
+        console.error("Error al subir imagen a Supabase:", error);
+        return res.status(500).json({ error: "Error al subir imagen" });
+      }
+
+      // Crear usuario
+      try {
+        const newUser = await userController.store(fields, files);
+        res.status(201).json({ message: "Usuario registrado correctamente", imageUrl: data.path });
+      } catch (err) {
+        console.error("Error al guardar usuario:", err);
+        res.status(500).json({ error: err.message });
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error en el servidor" });
+    console.error("Error general en el servidor:", error);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
-  // } LÓGICA VIEJA
 }
+
+module.exports = { registerUser };
 
 module.exports = { getToken, registerUser };
