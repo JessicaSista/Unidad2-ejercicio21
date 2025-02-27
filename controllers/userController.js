@@ -38,7 +38,7 @@ async function store(fields, files) {
     password: fields.password,
     email: fields.email,
     bio: fields.bio,
-    profilePic: data.key, //se tiene que llamar profilePic el campo!
+    profilePic: data.key, //está mal
   });
   await newUser.save();
   return newUser;

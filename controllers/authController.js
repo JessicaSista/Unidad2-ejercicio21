@@ -6,7 +6,6 @@ const { json } = require("express");
 const jwt = require("jsonwebtoken");
 const userController = require("./userController");
 
-// LÓGICA NUEVA
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -27,7 +26,6 @@ async function registerUser(req, res) {
     // Los archivos no se guardarán en el file system, sino en Supabase. Sin embargo, internamente, Formidable guarda los
     // archivos temporalmente en un directorio temporal (que en Windows se llama “Temp”).
 
-    // LÓGICA NUEVA {
     const form = formidable({
       multiples: true,
       keepExtensions: true,
@@ -42,18 +40,9 @@ async function registerUser(req, res) {
           cacheControl: "3600",
           upsert: false,
           contentType: files.profilePic.mimetype,
-          duplex: "half", // esta opción es poco común, asegúrate de que sea necesaria
+          duplex: "half",
         });
 
-      if (uploadError) {
-        console.error(uploadError);
-        return res.status(500).json({ message: "Error al subir el archivo a Supabase" });
-      }
-
-      // Aquí, ahora puedes manejar 'uploadData' si lo necesitas
-      console.log(uploadData);
-      // } LÓGICA NUEVA
-      // LÓGICA VIEJA {
       const username = fields.username;
       const email = fields.email;
       const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -64,7 +53,17 @@ async function registerUser(req, res) {
 
         return res.status(400).json({ message: "Email o Username ya están en uso" });
       } else {
-        const newUser = await userController.store(fields, files);
+        const newUser = new User({
+          firstname: fields.firstname,
+          lastname: fields.lastname,
+          username: fields.username,
+          password: fields.password,
+          email: fields.email,
+          bio: fields.bio,
+          profilePic: uploadData.path,
+        });
+
+        await newUser.save();
         res.status(201).json({ message: "Usuario registrado correctamente" });
       }
     });
@@ -72,7 +71,6 @@ async function registerUser(req, res) {
     console.error(error);
     res.status(500).json({ message: "Error en el servidor" });
   }
-  // } LÓGICA VIEJA
 }
 
 module.exports = { getToken, registerUser };
