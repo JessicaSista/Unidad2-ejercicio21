@@ -5,6 +5,8 @@ const port = process.env.APP_PORT;
 const app = express();
 const path = require("path");
 
+console.log("🚀 Servidor iniciando...");
+
 app.set("view engine", "ejs");
 
 // app.use(cors()); // Para habilitar esta línea es necesario instalar la librería `cors`.
