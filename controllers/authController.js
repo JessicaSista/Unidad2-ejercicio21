@@ -36,15 +36,22 @@ async function registerUser(req, res) {
     form.parse(req, async (err, fields, files) => {
       const ext = path.extname(files.profilePic.filepath); //(opcional)
       const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
-      const { data, error } = await supabase.storage
-        .from("profilepics") // el nombre del bucket es "profilepics".
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("profilepics")
         .upload(newFileName, fs.createReadStream(files.profilePic.filepath), {
-          //profilePic es el nombre del campo
           cacheControl: "3600",
           upsert: false,
           contentType: files.profilePic.mimetype,
-          duplex: "half",
+          duplex: "half", // esta opción es poco común, asegúrate de que sea necesaria
         });
+
+      if (uploadError) {
+        console.error(uploadError);
+        return res.status(500).json({ message: "Error al subir el archivo a Supabase" });
+      }
+
+      // Aquí, ahora puedes manejar 'uploadData' si lo necesitas
+      console.log(uploadData);
       // } LÓGICA NUEVA
       // LÓGICA VIEJA {
       const username = fields.username;
