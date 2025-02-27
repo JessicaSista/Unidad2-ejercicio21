@@ -10,15 +10,7 @@ const authController = require("../controllers/authController");
  */
 
 router.post("/tokens", authController.getToken);
-router.post("/users", async (req, res) => {
-  console.log("📩 Se recibió una petición en /users");
-  try {
-    await authController.registerUser(req, res);
-  } catch (err) {
-    console.error("❌ Error en la ruta /users:", err);
-    return res.status(500).json({ error: "Error en la creación de usuario" });
-  }
-});
+router.post("/users", authController.registerUser);
 
 router.get("/", async (req, res) => {
   try {
@@ -26,7 +18,7 @@ router.get("/", async (req, res) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: "felipe_munozmota@gmail.com",
+        email: "julio.mezamatos8@gmail.com",
         password: "1234",
       }),
     });
