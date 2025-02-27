@@ -1,26 +1,3 @@
-const User = require("../models/User");
-const formidable = require("formidable");
-const path = require("path");
-const fs = require("fs");
-const { json } = require("express");
-const jwt = require("jsonwebtoken");
-const userController = require("./userController");
-
-// LÓGICA NUEVA
-const { createClient } = require("@supabase/supabase-js");
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-
-async function getToken(req, res) {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.json({ msg: "Credenciales incorrectas." });
-
-  const isValidPassword = await User.comparePassword(req.body.password, user.password);
-  if (!isValidPassword) return res.json({ msg: "Credenciales incorrectas2." });
-
-  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
-  return res.json(token);
-}
 async function registerUser(req, res) {
   try {
     const form = formidable({
@@ -52,9 +29,22 @@ async function registerUser(req, res) {
               duplex: "half",
             });
 
+          // Check if there was an error during the upload
           if (error) {
             throw new Error(`Error al subir archivo: ${error.message}`);
           }
+
+          // Ensure 'data' contains the required information (e.g., file URL)
+          const fileUrl = data?.Key
+            ? `${process.env.SUPABASE_URL}/storage/v1/object/public/profilepics/${data.Key}`
+            : null;
+
+          if (!fileUrl) {
+            return res.status(500).json({ error: "No se pudo obtener la URL de la imagen." });
+          }
+
+          // Add the file URL to the user's data (in case you want to store it in the DB)
+          fields.profilePicUrl = fileUrl;
 
           // Crear el nuevo usuario en la base de datos
           const newUser = await userController.store(fields, files);
@@ -72,5 +62,3 @@ async function registerUser(req, res) {
     res.status(500).json({ message: "Error en el servidor", details: error.message });
   }
 }
-
-module.exports = { getToken, registerUser };
