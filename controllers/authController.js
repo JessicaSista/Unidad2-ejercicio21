@@ -46,7 +46,7 @@ async function registerUser(req, res) {
         // Si hay imagen subida, eliminarla de Supabase
         if (files.profilePic) {
           const { error } = await supabase.storage
-            .from("profilePics")
+            .from("profilepics")
             .remove([files.profilePic.filepath]);
 
           if (error) {
@@ -73,7 +73,7 @@ async function registerUser(req, res) {
       const newFileName = `image_${Date.now()}${ext}`;
 
       const { data, error } = await supabase.storage
-        .from("profilePics")
+        .from("profilepics")
         .upload(newFileName, fs.createReadStream(profilePicFile.filepath), {
           cacheControl: "3600",
           upsert: false,
