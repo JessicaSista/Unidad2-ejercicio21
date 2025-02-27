@@ -47,6 +47,9 @@ async function registerUser(req, res) {
         });
       // } LÓGICA NUEVA
       // LÓGICA VIEJA {
+      const username = fields.username;
+      const email = fields.email;
+      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
       if (existingUser) {
         const { data, error } = await supabase.storage
           .from("profilepics")
