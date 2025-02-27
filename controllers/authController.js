@@ -1,3 +1,27 @@
+const User = require("../models/User");
+const formidable = require("formidable");
+const path = require("path");
+const fs = require("fs");
+const { json } = require("express");
+const jwt = require("jsonwebtoken");
+const userController = require("./userController");
+
+// LÓGICA NUEVA
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+async function getToken(req, res) {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.json({ msg: "Credenciales incorrectas." });
+
+  const isValidPassword = await User.comparePassword(req.body.password, user.password);
+  if (!isValidPassword) return res.json({ msg: "Credenciales incorrectas2." });
+
+  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
+  return res.json(token);
+}
+
 async function registerUser(req, res) {
   try {
     const form = formidable({
@@ -62,3 +86,5 @@ async function registerUser(req, res) {
     res.status(500).json({ message: "Error en el servidor", details: error.message });
   }
 }
+
+module.exports = { getToken, registerUser };
