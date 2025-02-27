@@ -34,7 +34,7 @@ async function registerUser(req, res) {
     });
 
     form.parse(req, async (err, fields, files) => {
-      const ext = path.extname(files.avatar.filepath); //(opcional)
+      const ext = path.extname(files.profilePic.filepath); //(opcional)
       const newFileName = `image_${Date.now()}${ext}`; // el nombre de las imágenes va a estar compuesto por la palabra “image_” seguido de la fecha y hora actual (opcional)
       const { data, error } = await supabase.storage
         .from("profilepics") // el nombre del bucket es "profilepics".
