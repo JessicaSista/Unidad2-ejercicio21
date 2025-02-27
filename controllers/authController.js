@@ -43,6 +43,7 @@ async function registerUser(req, res) {
           cacheControl: "3600",
           upsert: false,
           contentType: files.profilePic.mimetype,
+          duplex: "half",
         });
       // } LÓGICA NUEVA
       // LÓGICA VIEJA {
