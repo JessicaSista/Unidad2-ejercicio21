@@ -13,7 +13,6 @@ const userSchema = new Schema(
     profilePic: String /* porque en el documento vamos a guardar la URL de donde se almacena */,
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    tweets: [{ type: Schema.Types.ObjectId, ref: "Tweet" }],
     tweetList: [{ type: Schema.Types.ObjectId, ref: "Tweet" }],
   },
   {
