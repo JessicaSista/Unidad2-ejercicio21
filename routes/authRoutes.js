@@ -11,12 +11,11 @@ const authController = require("../controllers/authController");
 
 router.post("/tokens", authController.getToken);
 router.post("/users", async (req, res) => {
+  console.log("📩 Se recibió una petición en /users");
   try {
-    // Llamamos al controlador registerUser y pasamos los parámetros
     await authController.registerUser(req, res);
   } catch (err) {
-    // Si ocurre un error, lo capturamos y lo logueamos
-    console.error("Error en la ruta /users:", err);
+    console.error("❌ Error en la ruta /users:", err);
     return res.status(500).json({ error: "Error en la creación de usuario" });
   }
 });
