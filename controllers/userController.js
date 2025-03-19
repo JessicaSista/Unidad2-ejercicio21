@@ -16,7 +16,11 @@ async function show(req, res) {
     const username = req.params.username;
     const user = await User.findOne({ username })
       .select("-password") // Excluye la contraseña
-      .populate("tweetList");
+      .populate({
+        path: "tweetList",
+        populate: { path: "user", model: User },
+        options: { sort: { createdAt: -1 } },
+      });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });

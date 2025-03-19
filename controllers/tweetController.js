@@ -2,12 +2,14 @@ const Tweet = require("../models/Tweet");
 
 async function index(req, res) {
   try {
-    const tweets = await Tweet.find().sort({ createdAt: -1 }).limit(20);
+    const tweets = await Tweet.find().sort({ createdAt: -1 }).limit(20).populate("user"); // Popular el campo "user" de cada tweet
+
     return res.json(tweets);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Hubo un error buscando los tweets", error: error.message });
+    return res.status(500).json({
+      message: "Hubo un error buscando los tweets",
+      error: error.message,
+    });
   }
 }
 
