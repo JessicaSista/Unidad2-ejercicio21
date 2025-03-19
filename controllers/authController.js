@@ -12,6 +12,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 
 async function getToken(req, res) {
   const user = await User.findOne({ email: req.body.email });
+  console.log(req.body.email);
+  console.log(req.body.password);
   if (!user) return res.json({ msg: "Credenciales incorrectas." });
 
   const isValidPassword = await User.comparePassword(req.body.password, user.password);
