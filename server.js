@@ -4,7 +4,9 @@ const routes = require("./routes");
 const port = process.env.APP_PORT;
 const app = express();
 const path = require("path");
+const cors = require("cors");
 
+app.use(cors());
 app.set("view engine", "ejs");
 
 // app.use(cors()); // Para habilitar esta línea es necesario instalar la librería `cors`.
