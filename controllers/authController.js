@@ -12,15 +12,13 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 
 async function getToken(req, res) {
   const user = await User.findOne({ email: req.body.email });
-  console.log(req.body.email);
-  console.log(req.body.password);
   if (!user) return res.json({ msg: "Credenciales incorrectas." });
 
   const isValidPassword = await User.comparePassword(req.body.password, user.password);
   if (!isValidPassword) return res.json({ msg: "Credenciales incorrectas2." });
 
   const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
-  return res.json(token);
+  return { id: user.id, username: user.username, token: res.json(token) };
 }
 async function registerUser(req, res) {
   try {
