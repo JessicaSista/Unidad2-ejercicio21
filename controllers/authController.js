@@ -18,7 +18,12 @@ async function getToken(req, res) {
   if (!isValidPassword) return res.json({ msg: "Credenciales incorrectas2." });
 
   const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
-  return res.json({ id: user.id, username: user.username, token: token });
+  return res.json({
+    id: user.id,
+    username: user.username,
+    profilePic: user.profilePic,
+    token: token,
+  });
 }
 async function registerUser(req, res) {
   try {
