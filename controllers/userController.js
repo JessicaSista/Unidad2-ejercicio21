@@ -14,6 +14,11 @@ async function index(req, res) {}
 // Display the specified resource.
 async function show(req, res) {
   try {
+    console.log("🔍 Iniciando búsqueda de usuario...");
+
+    const { username } = req.params; // Asegurarse de obtener el username correctamente
+    console.log("📌 Username recibido:", username);
+
     const user = await User.findOne({ username })
       .select("-password")
       .populate({
@@ -28,12 +33,14 @@ async function show(req, res) {
       });
 
     if (!user) {
+      console.warn("⚠️ Usuario no encontrado:", username);
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
+    console.log("✅ Usuario encontrado:", user);
     res.json(user);
   } catch (err) {
-    console.error("Error al obtener usuario:", err);
+    console.error("❌ Error al obtener usuario:", err);
     res.status(500).json({ message: "Error al obtener usuario." });
   }
 }
