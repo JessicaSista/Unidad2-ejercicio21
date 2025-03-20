@@ -1,4 +1,5 @@
-const Tweet = require("../models/Tweet");
+const User = require("../models/User"); // Asegúrate de que la ruta sea correcta
+const Tweet = require("../models/Tweet"); // También verifica que Tweet esté importado
 
 async function index(req, res) {
   try {
@@ -26,28 +27,19 @@ async function store(req, res) {
   }
 
   try {
-    console.log("🚀 Creando tweet...");
     const newTweet = await Tweet.create({ text, user: userId });
-    console.log("✅ Tweet creado:", newTweet);
 
-    console.log("🔍 Buscando usuario con ID:", userId);
     const creator = await User.findById(userId);
 
     if (!creator) {
-      console.warn("⚠️ Usuario no encontrado.");
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    console.log("✅ Usuario encontrado:", creator);
-
-    console.log("📌 Agregando tweet a la tweetList...");
     creator.tweetList.push(newTweet._id);
     await creator.save();
-    console.log("✅ Tweet agregado a la tweetList correctamente.");
 
     return res.status(201).json(newTweet);
   } catch (error) {
-    console.error("❌ Error en store():", error);
     return res
       .status(500)
       .json({ message: "Hubo un error creando el tweet", error: error.message });
