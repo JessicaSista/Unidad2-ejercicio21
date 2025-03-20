@@ -55,14 +55,12 @@ async function destroy(req, res) {
       return res.status(404).json({ message: "Tweet no encontrado" });
     }
 
-    // Verifica si el usuario logueado es el dueño del tweet
+    // verificamos si el usuario logueado es el dueño del tweet
     if (tweet.user._id.toString() !== req.auth.sub) {
       return res.status(403).json({ message: "No tienes permisos para eliminar este tweet" });
     }
-
-    // Elimina el tweet
+    //si lo es, eliminamos el tweet
     await tweet.deleteOne();
-    console.log("se eliminó el twwet");
     return res.json({ message: "El tweet se ha eliminado correctamente" });
   } catch (error) {
     return res
