@@ -28,7 +28,13 @@ async function store(req, res) {
   try {
     const newTweet = await Tweet.create({ text, user: userId });
 
-    await User.findByIdAndUpdate(userId, { $push: { tweetList: newTweet._id } }, { new: true });
+    const creator = await User.findById(userId);
+    if (!creator) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    creator.tweetList.push(newTweet._id);
+    await creator.save(); // Guardar los cambios en la base de datos
 
     return res.status(201).json(newTweet);
   } catch (error) {
