@@ -50,8 +50,13 @@ async function update(req, res) {
 // Remove the specified resource from storage.
 async function destroy(req, res) {
   try {
-    const tweet = await Tweet.findById(req.params.id); //usar findbyidannddelete
-    await tweet.deleteOne();
+    const tweet = await Tweet.findById(req.params.id);
+    if (!tweet) {
+      return res.status(404).json({ message: "Tweet no encontrado" });
+    }
+
+    // Verifica que el usuario  sea el dueño del tweet
+    if (tweet.user.toString() !== req.auth.sub) await tweet.deleteOne();
     return res.json({ message: "El tweet se ha eliminado correctamente" });
   } catch (error) {
     return res
