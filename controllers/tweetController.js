@@ -16,19 +16,25 @@ async function index(req, res) {
 // Display the specified resource.
 async function show(req, res) {}
 
-// Store a newly created resource in storage.
+// Store a newly created resource in storage.=
 async function store(req, res) {
   const { text } = req.body;
   const userId = req.auth.sub;
+
   if (!text.length) {
-    return res.json("El campo text no puede estar vacío");
+    return res.status(400).json({ message: "El campo text no puede estar vacío" });
   }
 
   try {
     const newTweet = await Tweet.create({ text, user: userId });
-    return res.json(newTweet);
+
+    await User.findByIdAndUpdate(userId, { $push: { tweetList: newTweet._id } }, { new: true });
+
+    return res.status(201).json(newTweet);
   } catch (error) {
-    return res.status(500).json({ message: "Hubo un error creado el tweet", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Hubo un error creando el tweet", error: error.message });
   }
 }
 
