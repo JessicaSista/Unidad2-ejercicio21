@@ -2,7 +2,7 @@ const { mongoose, Schema } = require("../db");
 
 const tweetSchema = new Schema(
   {
-    text: { type: String, maxlength: 140 },
+    text: { type: String, maxlength: 280 },
     user: { type: Schema.Types.ObjectId, ref: "User" },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },

@@ -11,7 +11,7 @@ module.exports = async () => {
       const randomUser = users[faker.number.int({ min: 0, max: users.length - 1 })];
 
       const newTweet = new Tweet({
-        text: faker.lorem.sentence(20).substring(0, 140), // Asegura máximo 140 caracteres
+        text: faker.lorem.sentence(20).substring(0, 280), // Asegura máximo 140 caracteres
         user: randomUser._id,
         username: randomUser.username,
         createdAt: faker.date.past(),
