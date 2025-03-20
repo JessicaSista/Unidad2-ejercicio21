@@ -2,7 +2,6 @@ const formidable = require("formidable");
 const path = require("path");
 const fs = require("fs");
 const User = require("../models/User");
-const Tweet = require("../models/Tweet");
 
 const { createClient } = require("@supabase/supabase-js");
 
@@ -14,16 +13,12 @@ async function index(req, res) {}
 // Display the specified resource.
 async function show(req, res) {
   try {
+    const username = req.params.username;
     const user = await User.findOne({ username })
-      .select("-password")
+      .select("-password") // Excluye la contraseña
       .populate({
         path: "tweetList",
-        model: "Tweet",
-        populate: {
-          path: "user",
-          model: "User",
-          select: "firstname lastname username profilePic",
-        },
+        populate: { path: "user", model: User },
         options: { sort: { createdAt: -1 } },
       });
 
