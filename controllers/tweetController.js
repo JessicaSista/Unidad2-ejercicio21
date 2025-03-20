@@ -56,7 +56,7 @@ async function destroy(req, res) {
     }
 
     // Verifica que el usuario  sea el dueño del tweet
-    if (tweet.user.toString() !== req.auth.sub) await tweet.deleteOne();
+    if (tweet.user._id === req.auth.sub) await tweet.deleteOne();
     return res.json({ message: "El tweet se ha eliminado correctamente" });
   } catch (error) {
     return res
