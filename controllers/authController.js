@@ -21,6 +21,8 @@ async function getToken(req, res) {
   return res.json({
     id: user.id,
     username: user.username,
+    firstname: user.firstname,
+    lastname: user.lastname,
     profilePic: user.profilePic,
     token: token,
   });
