@@ -18,7 +18,7 @@ router.patch("/:username", userController.update);
 router.delete("/:id", userController.destroy);
 
 router.patch("/:id/follows", userController.toggleFollow);
-router.get("/:id/followers", userController.getFollowers);
-router.get("/:id/following", userController.getFollowing);
+router.get("/:username/followers", userController.getFollowers);
+router.get("/:username/following", userController.getFollowing);
 
 module.exports = router;

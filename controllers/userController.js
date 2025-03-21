@@ -139,15 +139,15 @@ async function toggleFollow(req, res) {
 }
 
 async function getFollowers(req, res) {
-  const { id } = req.params;
-  const user = await User.findById(id).populate("followers");
+  const { username } = req.params;
+  const user = await User.findOne({ username }).populate("followers");
 
   res.json({ followers: user.followers });
 }
 
 async function getFollowing(req, res) {
-  const { id } = req.params;
-  const user = await User.findById(id).populate("following");
+  const { username } = req.params;
+  const user = await User.findOne({ username }).populate("following");
   res.json({ following: user.following });
 }
 // Otros handlers...
