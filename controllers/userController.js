@@ -118,48 +118,24 @@ async function update(req, res) {
 async function destroy(req, res) {} //eliminar usuario y eliminar sus tweets (on delete cascade en mongoose averiguar) !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 async function toggleFollow(req, res) {
-  try {
-    const toFollow_id = req.params.id;
-    console.log("🔄 ID del usuario a seguir:", toFollow_id);
+  const toFollow_id = req.params.id;
+  const toFollow = await User.findById(toFollow_id); //encuentro el usuario a seguir (o no)
 
-    const userIdFromToken = req.auth?.sub;
-    console.log("🔐 ID del usuario logueado (desde token):", userIdFromToken);
+  const user = await User.findById(req.auth.sub);
 
-    if (!userIdFromToken) {
-      console.log("❌ No se encontró userId en el token");
-      return res.status(401).json({ error: "Token inválido o no presente" });
-    }
-
-    const toFollow = await User.findById(toFollow_id);
-    const user = await User.findById(userIdFromToken);
-
-    if (!toFollow || !user) {
-      console.log("❌ Usuario a seguir o usuario logueado no encontrados");
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    const yaLoSigue = user.following.includes(toFollow_id);
-    console.log("🔍 ¿Ya lo seguía?", yaLoSigue);
-
-    if (yaLoSigue) {
-      console.log("➖ Dejar de seguir");
-      user.following.pull(toFollow_id);
-      toFollow.followers.pull(user._id);
-    } else {
-      console.log("➕ Empezar a seguir");
-      user.following.push(toFollow_id);
-      toFollow.followers.push(user._id);
-    }
-
-    await user.save();
-    await toFollow.save();
-
-    console.log("✅ Cambios guardados correctamente");
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("❌ Error en toggleFollow:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+  if (user.following.includes(toFollow_id)) {
+    //si lo seguía
+    user.following.pull(toFollow_id); //saco a ese usuario como seguidor
+    toFollow.followers.pull(user._id); //me saco como seguidor de ese usuario
+  } else {
+    //si no lo seguía
+    user.following.push(toFollow_id); //agrego a ese usuario como seguidor
+    toFollow.followers.push(user._id); //me agrego como seguidor de ese usuario
   }
+
+  //guardo los cambios en la base de datos
+  await user.save();
+  await toFollow.save();
 }
 
 async function getFollowers(req, res) {
