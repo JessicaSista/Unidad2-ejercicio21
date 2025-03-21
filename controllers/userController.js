@@ -119,7 +119,7 @@ async function destroy(req, res) {} //eliminar usuario y eliminar sus tweets (on
 
 async function toggleFollow(req, res) {
   const toFollow_id = req.params.id;
-  const toFollow = await User.findById(id); //encuentro el usuario a seguir (o no)
+  const toFollow = await User.findById(toFollow_id); //encuentro el usuario a seguir (o no)
 
   const user = await User.findById(req.auth.sub);
 
