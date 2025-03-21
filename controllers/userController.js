@@ -140,22 +140,9 @@ async function toggleFollow(req, res) {
 
 async function getFollowers(req, res) {
   const { id } = req.params;
-  console.log("📌 getFollowers - ID recibido:", id); // Log para ver si el ID llega bien
+  const user = await User.findById(id).populate("followers");
 
-  try {
-    const user = await User.findById(id).populate("followers");
-
-    if (!user) {
-      console.log("❌ Usuario no encontrado");
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
-
-    console.log("✅ Seguidores encontrados:", user.followers);
-    res.json({ followers: user.followers });
-  } catch (error) {
-    console.error("🚨 Error en getFollowers:", error);
-    res.status(500).json({ message: "Error al obtener seguidores.", error: error.message });
-  }
+  res.json({ follower: user.followers });
 }
 
 async function getFollowing(req, res) {
