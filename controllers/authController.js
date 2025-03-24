@@ -11,7 +11,14 @@ const { createClient } = require("@supabase/supabase-js");
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 async function getToken(req, res) {
-  const user = await User.findOne({ email: req.body.email });
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Expresión regular para validar email
+
+  const query = isEmail.test(req.body.identifier)
+    ? { email: req.body.identifier }
+    : { username: req.body.identifier };
+
+  const user = await User.findOne(query);
+
   if (!user) return res.json({ msg: "Credenciales incorrectas." });
 
   const isValidPassword = await User.comparePassword(req.body.password, user.password);
