@@ -52,8 +52,12 @@ async function registerUser(req, res) {
 
       // Verificamos si el usuario ya existe antes de subir la imagen
       const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+
       if (existingUser) {
-        return res.status(400).json({ message: "Email o Username ya están en uso" });
+        const message =
+          existingUser.email === email ? "El email ya está en uso" : "El username ya está en uso";
+
+        return res.status(400).json({ message });
       }
 
       // Subir imagen solo si el usuario no existe
